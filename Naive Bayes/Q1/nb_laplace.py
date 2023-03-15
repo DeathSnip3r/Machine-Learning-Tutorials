@@ -1,6 +1,6 @@
 import numpy as np
 
-# Function to open file, read each line from file into an array allLines
+# Function to open file, read each line from file into an array allLines 
 def load_data():
     with open("simple-food-reviews.txt", "r") as data:
         allLines = [line.replace("\n","") for line in data.readlines()]
@@ -16,11 +16,10 @@ class reviewItem:
 # Loading data and creating an array of reviewItem objets from data array
 data = load_data()
 reviews = [reviewItem(rev) for rev in data]
-
+#np.random.shuffle(reviews)
 
 training_data = reviews[:12]
 test_data = reviews[12:]
-
 # print("Training data:")
 # for review in training_data:
 #     print(("Classified: {}, Comment: {}").format(review.classified, review.review_comment))
@@ -70,32 +69,49 @@ for word in words.keys():
         wordCount[1] = (wordCount[1] + k) / (countBad + k*nClass)
     else:
         wordCount[1] = wordCount[1] / countBad
-for word in words:
-    print(("{} , {}").format(word,words[word]))
-print("NumGood: {}, NumBad: {}".format(countGood, countBad))
+    	
+    if wordCount[0] == wordCount[1]:
+        wordCount[0] = (wordCount[0] + k) / (countGood + k*nClass)
+        wordCount[1] = (wordCount[1] + k) / (countBad + k*nClass)
+
+# for word in words:
+#     print(("{} , {}").format(word,words[word]))
+
 
 # We have now trained our model. Can now test our model
 theConfusion = np.zeros((2,2))
 for item in test_data:
     pGoodNew = 1
     pBadNew = 1
-
+    # Generate encoding
+    arr = []
     for word in words.keys():
         if word in item.review_comment.split():
+            arr.append(True)
+        else:
+            arr.append(False)
+
+    # For all words that are in the dictionary, compute P(Word | Good) and P(Word | Bad)
+    index = 0
+    for word in words.keys():
+        if arr[index] == True:
             pGoodNew = pGoodNew * words[word][0]
             pBadNew = pBadNew * words[word][1]
+            index += 1
         else:
             pGoodNew = pGoodNew * (1 - words[word][0])
-            pBadNew = pBadNew * (1 - words[word][1])
-    
+            pBadNew = pBadNew * (1 - words[word][1]) 
+            index += 1
+
+    # # Account for unseen words: P(UnseenWord | Good) and P(UnseenWord | Bad)
     for word in item.review_comment.split():
         if word not in words.keys():
             pGoodNew = pGoodNew * (k / (k*nClass))
             pBadNew = pBadNew * (k / (k*nClass))
-    
-    print(("P(Bad|Review) = {}, P(Good|Review) = {}").format(pBadNew,pGoodNew))
-    pGivenBad = (pBadNew * pBadReview) / (pBadNew * pBadReview + pGoodNew * pGoodReview)
+
+    pGivenBad = np.abs((pBadNew * pBadReview) / (pBadNew * pBadReview + pGoodNew * pGoodReview))
     pGivenGood = 1 - pGivenBad
+    print(("P(Bad | Review) = {}, P(Good | Review) = {}").format(pGivenBad,pGivenGood))
 
     # After classification, we want to see the results
     if pGivenBad > pGivenGood:
