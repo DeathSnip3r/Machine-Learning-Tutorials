@@ -16,7 +16,7 @@ class reviewItem:
 # Loading data and creating an array of reviewItem objets from data array
 data = load_data()
 reviews = [reviewItem(rev) for rev in data]
-np.random.shuffle(reviews)
+
 
 training_data = reviews[:12]
 test_data = reviews[12:]
@@ -49,6 +49,7 @@ for item in training_data:
 
 # for word in words:
 #     print(("{} , {}").format(word,words[word]))
+# print("NumGood: {}, NumBad: {}".format(countGood, countBad))
 
 # Variables for later
 numberReviews = len(training_data)
@@ -69,6 +70,9 @@ for word in words.keys():
         wordCount[1] = (wordCount[1] + k) / (countBad + k*nClass)
     else:
         wordCount[1] = wordCount[1] / countBad
+for word in words:
+    print(("{} , {}").format(word,words[word]))
+print("NumGood: {}, NumBad: {}".format(countGood, countBad))
 
 # We have now trained our model. Can now test our model
 theConfusion = np.zeros((2,2))
@@ -77,7 +81,7 @@ for item in test_data:
     pBadNew = 1
 
     for word in words.keys():
-        if word in item.review_comment:
+        if word in item.review_comment.split():
             pGoodNew = pGoodNew * words[word][0]
             pBadNew = pBadNew * words[word][1]
         else:
@@ -85,9 +89,11 @@ for item in test_data:
             pBadNew = pBadNew * (1 - words[word][1])
     
     for word in item.review_comment.split():
-        if word not in words:
+        if word not in words.keys():
+            pGoodNew = pGoodNew * (k / (k*nClass))
             pBadNew = pBadNew * (k / (k*nClass))
     
+    print(("P(Bad|Review) = {}, P(Good|Review) = {}").format(pBadNew,pGoodNew))
     pGivenBad = (pBadNew * pBadReview) / (pBadNew * pBadReview + pGoodNew * pGoodReview)
     pGivenGood = 1 - pGivenBad
 
