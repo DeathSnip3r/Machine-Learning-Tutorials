@@ -111,20 +111,21 @@ for item in test_data:
 
     pGivenBad = np.abs((pBadNew * pBadReview) / (pBadNew * pBadReview + pGoodNew * pGoodReview))
     pGivenGood = 1 - pGivenBad
-    print(("P(Bad | Review) = {}, P(Good | Review) = {}").format(pGivenBad,pGivenGood))
+    print(("P(Bad | Review) = {}, P(Good | Review) = {}, actual = {}").format(pGivenBad,pGivenGood,item.classified))
 
     # After classification, we want to see the results
     if pGivenBad > pGivenGood:
         review = False
         if review == item.classified:
-            theConfusion[0,1] += 1
+            theConfusion[1,1] += 1
         else:
             theConfusion[1,0] += 1
-    else:
-        if item.classified:
+    elif pGivenGood > pGivenBad:
+        review = True
+        if review == item.classified:
             theConfusion[0,0] += 1
         else:
-            theConfusion[1,1] += 1
+            theConfusion[0,1] += 1
 
 # Print results of testing
 accuracy = np.trace(theConfusion) / len(test_data)
