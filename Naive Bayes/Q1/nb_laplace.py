@@ -130,4 +130,4 @@ for item in test_data:
 # Print results of testing
 accuracy = np.trace(theConfusion) / len(test_data)
 print(*theConfusion, sep="\n")
-print("Accuracy: ", round(accuracy,4) * 100)
+print("Accuracy: ", round(accuracy,4) * 100, "%")
