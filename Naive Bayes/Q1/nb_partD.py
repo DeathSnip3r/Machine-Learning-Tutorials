@@ -16,7 +16,7 @@ class reviewItem:
 # Loading data and creating an array of reviewItem objets from data array
 data = load_data()
 reviews = [reviewItem(rev) for rev in data]
-#np.random.shuffle(reviews)
+np.random.shuffle(reviews)
 
 training_data = reviews[:12]
 test_data = reviews[12:]
@@ -34,17 +34,18 @@ for item in training_data:
     else:
         countBad += 1
     for word in item.review_comment.split():
-        # if the word is in the dictionary, just increase the count in relevant place
-        if word in words:
-            if item.classified:
-                words[word][0] += 1
+        if len(word) > 2:
+            # if the word is in the dictionary, just increase the count in relevant place
+            if word in words:
+                if item.classified:
+                    words[word][0] += 1
+                else:
+                    words[word][1] += 1
             else:
-                words[word][1] += 1
-        else:
-            if item.classified:
-                words[word] = [1,0]
-            else:
-                words[word] = [0,1]
+                if item.classified:
+                    words[word] = [1,0]
+                else:
+                    words[word] = [0,1]
 
 # for word in words:
 #     print(("{} , {}").format(word,words[word]))
@@ -76,7 +77,6 @@ for word in words.keys():
 
 # for word in words:
 #     print(("{} , {}").format(word,words[word]))
-
 
 # We have now trained our model. Can now test our model
 theConfusion = np.zeros((2,2))
@@ -130,4 +130,4 @@ for item in test_data:
 # Print results of testing
 accuracy = np.trace(theConfusion) / len(test_data)
 print(*theConfusion, sep="\n")
-print("Accuracy: ", round(accuracy,4) * 100, "%")
+print("Accuracy: ", round(accuracy,4) * 100)

@@ -1,8 +1,13 @@
 import numpy as np
 
 # Function to open file, read each line from file into an array allLines 
-def load_data():
+def load_data_reviews():
     with open("simple-food-reviews.txt", "r") as data:
+        allLines = [line.replace("\n","") for line in data.readlines()]
+    return allLines
+
+def load_data_tests():
+    with open("custom-reviews.txt", "r") as data:
         allLines = [line.replace("\n","") for line in data.readlines()]
     return allLines
 
@@ -14,12 +19,14 @@ class reviewItem:
         self.review_comment = reviewLine[first_space_idx + 1:]
 
 # Loading data and creating an array of reviewItem objets from data array
-data = load_data()
+data = load_data_reviews()
+testData = load_data_tests()
 reviews = [reviewItem(rev) for rev in data]
+tests = [reviewItem(rev) for rev in testData]
 #np.random.shuffle(reviews)
 
-training_data = reviews[:12]
-test_data = reviews[12:]
+training_data = reviews
+test_data = tests
 # print("Training data:")
 # for review in training_data:
 #     print(("Classified: {}, Comment: {}").format(review.classified, review.review_comment))
@@ -130,4 +137,4 @@ for item in test_data:
 # Print results of testing
 accuracy = np.trace(theConfusion) / len(test_data)
 print(*theConfusion, sep="\n")
-print("Accuracy: ", round(accuracy,4) * 100, "%")
+print("Accuracy: ", round(accuracy,4) * 100)
