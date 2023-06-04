@@ -3,6 +3,7 @@ from tensorflow import keras
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+import random
 
 # Load the data and labels
 data, labels = np.genfromtxt("traindata.txt", delimiter=","), np.genfromtxt("trainlabels.txt", delimiter=",")
@@ -11,8 +12,23 @@ data, labels = np.genfromtxt("traindata.txt", delimiter=","), np.genfromtxt("tra
 scaler = StandardScaler()
 data = scaler.fit_transform(data)
 
+# Generate rotated data
+rotation_angles = [-1, -1]  # Specify the rotation angles to generate new data
+rotated_data = []
+for vector in data:
+    rotated_data.extend([np.roll(vector, random.choice(rotation_angles))])
+rotated_data = np.array(rotated_data)
+
+# Add noise to the data
+noise_factor = 0.0001  # Specify the noise factor
+noisy_data = rotated_data + noise_factor * np.random.randn(*rotated_data.shape)
+
+# Normalize the data
+scaler = StandardScaler()
+normalized_data = scaler.fit_transform(noisy_data)
+
 # Split the data into training and testing sets
-train_data, test_data, train_labels, test_labels = train_test_split(data, labels, test_size=0.2)
+train_data, test_data, train_labels, test_labels = train_test_split(normalized_data, labels, test_size=0.2)
 
 # Define the dropout rate
 dropout_rate = 0.4460576282054137
