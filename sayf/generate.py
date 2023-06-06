@@ -6,7 +6,9 @@ from sklearn.preprocessing import StandardScaler
 import random
 
 # Load the data and labels
-data, labels = np.genfromtxt("traindata.txt", delimiter=","), np.genfromtxt("trainlabels.txt", delimiter=",")
+data, labels = np.genfromtxt("traindata.txt", delimiter=","), np.genfromtxt(
+    "trainlabels.txt", delimiter=","
+)
 
 # Data preprocessing
 scaler = StandardScaler()
@@ -28,25 +30,33 @@ scaler = StandardScaler()
 normalized_data = scaler.fit_transform(noisy_data)
 
 # Split the data into training and testing sets
-train_data, test_data, train_labels, test_labels = train_test_split(normalized_data, labels, test_size=0.2)
+train_data, test_data, train_labels, test_labels = train_test_split(
+    normalized_data, labels, test_size=0.2
+)
+
+# One-hot encode the labels
+train_labels = keras.utils.to_categorical(train_labels)
+test_labels = keras.utils.to_categorical(test_labels)
 
 # Define the dropout rate
 dropout_rate = 0.4460576282054137
 
 # Define the model architecture
-model = keras.Sequential([
-    keras.layers.Dense(128, activation='relu', input_shape=(train_data.shape[1],)),
-    keras.layers.Dropout(dropout_rate),  # Adding dropout regularization
-    keras.layers.Dense(128, activation='relu'),
-    keras.layers.Dropout(dropout_rate),  # Adding dropout regularization
-    keras.layers.Dense(10, activation='softmax')
-])
+model = keras.Sequential(
+    [
+        keras.layers.Dense(128, activation="relu", input_shape=(train_data.shape[1],)),
+        keras.layers.Dropout(dropout_rate),  # Adding dropout regularization
+        keras.layers.Dense(128, activation="relu"),
+        keras.layers.Dropout(dropout_rate),  # Adding dropout regularization
+        keras.layers.Dense(10, activation="softmax"),
+    ]
+)
 
 # Compile the model with RMSprop optimizer
 optimizer = keras.optimizers.RMSprop(learning_rate=0.005205178926419261)
-model.compile(optimizer=optimizer,
-              loss='sparse_categorical_crossentropy',
-              metrics=['accuracy'])
+model.compile(
+    optimizer=optimizer, loss="categorical_crossentropy", metrics=["accuracy"]
+)
 
 # Train the model
 model.fit(train_data, train_labels, epochs=200, batch_size=512, verbose=1)
