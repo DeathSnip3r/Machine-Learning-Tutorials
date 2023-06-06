@@ -80,7 +80,7 @@ param_grid = {
         tf.keras.regularizers.l2(0.01),
     ],
     "learning_rate": [0.001],
-    "decay_steps": [10000],
+    "decay_steps": [1000],
     "decay_rate": [0.5],
 }
 
