@@ -1,0 +1,80 @@
+import tensorflow as tf
+from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.preprocessing import StandardScaler
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import GridSearchCV
+from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
+
+# Load the data and labels
+data = pd.read_csv('traindata.txt', header=None)
+labels = pd.read_csv('trainlabels.txt', header=None)
+
+# Data preprocessing
+scaler = StandardScaler()
+data = scaler.fit_transform(data)
+
+# Split the data into training and testing sets with shuffling
+train_data, test_data, train_labels, test_labels = train_test_split(data, labels, test_size=0.30, shuffle=True)
+
+# Define the MLP model
+class CustomKerasClassifier(KerasClassifier):
+    def __init__(self, **kwargs):
+        super(CustomKerasClassifier, self).__init__(**kwargs)
+
+    def build_fn(self, **kwargs):
+        return create_model(**kwargs)
+
+# Create the original create_model function without any changes
+def create_model(kernel_regularizer=None):
+    model = tf.keras.Sequential([
+        tf.keras.layers.Dense(1024, activation='relu', input_shape=(data.shape[1],),
+                              kernel_regularizer=kernel_regularizer),
+        tf.keras.layers.Dense(512, activation='relu',
+                              kernel_regularizer=kernel_regularizer),
+        tf.keras.layers.Dense(256, activation='relu',
+                              kernel_regularizer=kernel_regularizer),
+        tf.keras.layers.Dense(128, activation='relu',
+                              kernel_regularizer=kernel_regularizer),
+        tf.keras.layers.Dense(10, activation='softmax')
+    ])
+    model.compile(optimizer='adam',
+                  loss='sparse_categorical_crossentropy',
+                  metrics=['accuracy'])
+    return model
+
+# Define the parameter grid for grid search
+param_grid = {'kernel_regularizer': [None, tf.keras.regularizers.l2(0.005), tf.keras.regularizers.l2(0.05), tf.keras.regularizers.l2(0.5)]}
+
+# Perform grid search with cross-validation
+grid_search = GridSearchCV(CustomKerasClassifier(build_fn=create_model), param_grid, cv=3)
+grid_search.fit(data, labels)
+
+# Get the best model and its parameters
+best_model = grid_search.best_estimator_
+best_params = grid_search.best_params_
+
+print("Best Parameters:", best_params)
+
+# Define early stopping callback
+early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+
+# Train the best model with early stopping
+best_model.fit(data, labels, epochs=50, batch_size=32, validation_split=0.3, callbacks=[early_stopping])
+
+# Save the best model
+best_model.model.save("best_model.h5")
+print("Best model saved.")
+
+# Evaluate the best model using cross-validation
+cv_scores = cross_val_score(best_model, data, labels, cv=2)
+print("Cross-Validation Scores:", cv_scores)
+print("Mean CV Accuracy:", np.mean(cv_scores))
+
+# Split the data into training and testing sets with shuffling
+train_data, test_data, train_labels, test_labels = train_test_split(data, labels, test_size=0.3, shuffle=True)
+
+# Evaluate the best model on the test data
+test_loss, test_accuracy = best_model.model.evaluate(test_data, test_labels)
+print("Test Loss:", test_loss)
+print("Test Accuracy:", test_accuracy)
