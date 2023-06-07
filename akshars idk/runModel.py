@@ -5,7 +5,7 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 # Load the h5 model and test data
-model = keras.models.load_model("models/0.86.h5")
+model = keras.models.load_model("models/1.0.h5")
 test_data = pd.read_csv("traindata.txt", header=None)
 
 # Scale the test data
@@ -24,7 +24,7 @@ np.savetxt("testlabels.txt", predicted_labels, fmt="%d")
 # Take in the trainlabels.txt file and the predicted_labels.txt file
 # and print the accuracy score as a percentage
 true_labels = pd.read_csv("trainlabels.txt", header=None)
-predicted_labels = pd.read_csv("predicted_labels.txt", header=None)
+predicted_labels = pd.read_csv("testlabels.txt", header=None)
 print(
     "Model accuracy: {:.2f}%".format(
         accuracy_score(true_labels, predicted_labels) * 100
