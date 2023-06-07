@@ -21,7 +21,7 @@ data = scaler.fit_transform(data)
 
 # Split the data into training and testing sets with shuffling
 train_data, test_data, train_labels, test_labels = train_test_split(
-    data, labels_encoded, test_size=0.30, shuffle=True
+    data, labels_encoded, test_size=0.03, shuffle=True
 )
 
 
@@ -107,13 +107,9 @@ best_model.fit(
     labels,
     epochs=50,
     batch_size=32,
-    validation_split=0.3,
+    validation_split=0.03,
     callbacks=[early_stopping],
 )
-
-# Save the best model
-best_model.model.save("best_model.h5")
-print("Best model saved.")
 
 # Evaluate the best model using cross-validation
 cv_scores = cross_val_score(best_model, data, labels, cv=3)
@@ -122,10 +118,14 @@ print("Mean CV Accuracy:", np.mean(cv_scores))
 
 # Split the data into training and testing sets with shuffling
 train_data, test_data, train_labels, test_labels = train_test_split(
-    data, labels, test_size=0.3, shuffle=True
+    data, labels, test_size=0.03, shuffle=True
 )
 
 # Evaluate the best model on the test data
 test_loss, test_accuracy = best_model.model.evaluate(test_data, test_labels)
 print("Test Loss:", test_loss)
 print("Test Accuracy:", test_accuracy)
+
+# save the model with the accuracy score as the filename, in the models folder
+best_model.model.save("models/" + str(test_accuracy) + ".h5")
+# best_model.model.save(str(test_accuracy) + ".h5")
